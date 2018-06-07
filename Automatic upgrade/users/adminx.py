@@ -9,8 +9,8 @@ class BaseSetting(object):
     use_bootswatch = True
 
 class GlobalSettings(object):
-    site_title = '乐创教育在线平台'
-    site_footer = '乐创教育'
+    site_title = '自动升级后台'
+    site_footer = '拓叭吧'
     menu_style = 'accordion'#下拉菜单
 
 class EmailVerifyRecordAdmin(object):
@@ -24,7 +24,7 @@ class BannerAdmin(object):
     search_fields = ['title','image','url','index']
     list_filter = ['title','image','url','index','add_time']
 
-xadmin.site.register(EmailVerifyRecord,EmailVerifyRecordAdmin)
-xadmin.site.register(Banner,BannerAdmin)
+# xadmin.site.register(EmailVerifyRecord,EmailVerifyRecordAdmin)
+# xadmin.site.register(Banner,BannerAdmin)
 xadmin.site.register(views.BaseAdminView,BaseSetting)
 xadmin.site.register(views.CommAdminView,GlobalSettings)
