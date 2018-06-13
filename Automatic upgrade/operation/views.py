@@ -33,10 +33,10 @@ class ResourceView(View):
         elif int(mac_vsn.split('.')[2]) < int(v_sn.split('.')[2]):
             #选择升级
             print('---->选择升级')
-            return HttpResponse("{'status':'chance'}", content_type='application/json')
+            return HttpResponse("{\"status\":\"chance\"}", content_type='application/json')
         else:
             #不用升级
-            return HttpResponse("{'status':'no_change'}", content_type='application/json')
+            return HttpResponse("{\"status\":\"no_change\"}", content_type='application/json')
 
         #如果版本号2.0.2 选择更新
         #2.1.2 必须更新
@@ -50,10 +50,11 @@ class ResourceView1(View):
         version_sn = machine.version_sn
         version  = Version.objects.get(edition_sn=version_sn)
         version_files = VesionFile.objects.filter(version=version)
+
         #有可能没
-        if version_files.count == 0:
+        if version_files.count() == 0:
             # 不用升级
-            return HttpResponse("{'status':'no_change'}", content_type='application/json')
+            return HttpResponse("{\"status\":\"no_change\"}", content_type='application/json')
         new_files = []
         file_dict = {}
         for vs_file in version_files:
@@ -98,6 +99,7 @@ class ReturnIsUpdateView(View):
         machine = Machine.objects.filter(machine_sn=machine_sn)[0]
         machine.version_sn = version.edition_sn
         machine.save()
+
         file_path = version.file
         filname = version.name
         MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -106,6 +108,7 @@ class ReturnIsUpdateView(View):
         response = FileResponse(file)
         response['Content-Type'] = 'application/octet-stream'
         response['Content-Disposition'] = 'attachment;filename="{0}"'.format(filname)
+
         return response
 
 
