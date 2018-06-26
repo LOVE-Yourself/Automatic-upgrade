@@ -7,9 +7,9 @@ class MachineAdmin(object):
     list_filter = ['machine_sn', 'version_sn','add_time']
 
 class VersionAdmin(object):
-    list_display = ['name', 'file','number','edition_sn','add_time']
-    search_fields = ['name','file','number','edition_sn']
-    list_filter = ['name', 'file','number','edition_sn','add_time']
+    list_display = ['name', 'file','edition_sn','add_time']
+    search_fields = ['name','file','edition_sn']
+    list_filter = ['name', 'file','edition_sn','add_time']
 
 
 class MachineChangeStatusAdmin(object):
