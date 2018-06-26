@@ -58,8 +58,6 @@ class ResourceView(View):
             else:
                 return self.chanceversion(machine,version)
 
-                #如果版本号2.0.2 选择更新
-                #2.1.2 必须更新
 
 class ReturnIsUpdateView(View):
     def machinestatus(self,version,machine_sn,isupdate):
