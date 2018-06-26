@@ -50,13 +50,13 @@ class ResourceView(View):
             machine_status = MachineChangeStatus.objects.filter(machine=machine)
             machine_Newstatus = machine_status.order_by('-add_time')[0]#取最新的状态
         except:
-            self.chanceversion(machine,version)
+            return self.chanceversion(machine,version)
         if not machine_Newstatus.is_update:
             if machine_Newstatus.version_sn == v_sn:
                 #证明 最新的版本它选择没更新
                 return HttpResponse("{\"status\":\"chance_noupdate\"}", content_type='application/json')
             else:
-                self.chanceversion(machine,version)
+                return self.chanceversion(machine,version)
 
 
 class ReturnIsUpdateView(View):
