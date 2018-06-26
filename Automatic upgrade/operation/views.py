@@ -50,13 +50,13 @@ class ResourceView(View):
             machine_status = MachineChangeStatus.objects.filter(machine=machine)
             machine_Newstatus = machine_status.order_by('-add_time')[0]#取最新的状态
         except:
-            self.chanceversion(machine,version)
+            return self.chanceversion(machine,version)
         if not machine_Newstatus.is_update:
             if machine_Newstatus.version_sn == v_sn:
                 #证明 最新的版本它选择没更新
                 return HttpResponse("{\"status\":\"chance_noupdate\"}", content_type='application/json')
             else:
-                self.chanceversion(machine,version)
+                return self.chanceversion(machine,version)
 
                 #如果版本号2.0.2 选择更新
                 #2.1.2 必须更新
@@ -142,7 +142,6 @@ class DisplayChangefileView(View):
 #修改机器到指定的版本
 class ChangeMachineToViesionView(View):
     def get(self,request,machine_sn):
-
         edition_sn = request.GET.get('edition_sn','')
         if edition_sn:
             version = Version.objects.get(edition_sn=edition_sn)
