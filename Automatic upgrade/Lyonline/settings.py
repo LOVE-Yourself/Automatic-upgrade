@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'xadmin',
     'crispy_forms',
     'operation',
-    'captcha',
+    'changefile',
     'pure_pagination',
     # 'apps.operation',
 
@@ -99,6 +99,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME':'upgrate',
+        'USER':'root',
         'PASSWORD':'tbb123456',
         'HOST':'39.107.243.161',
         'PORT':'3306',

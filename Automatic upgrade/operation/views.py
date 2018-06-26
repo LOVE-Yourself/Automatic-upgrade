@@ -1,29 +1,31 @@
-import os,shutil,json
+import os,shutil,json,zipfile
 
 from django.shortcuts import render
 from django.views.generic import View
 from django.http import FileResponse,HttpResponse
 
 from Lyonline.settings import BASE_DIR
-from .models import Version,UploadFile,Machine,VesionFile
+from .models import Version,Machine,MachineChangeStatus,DeferentFileNameVesion
 from  utils.util import Zipfolder
 
 class ResourceView(View):
-    def get(self,request,machine_sn):
-        #机器号  取出版本号2.0.1
-        machine = Machine.objects.get(machine_sn = machine_sn)
-        #机器当前的版本号
-        mac_vsn = machine.version_sn
-        version = Version.objects.order_by('-add_time')[0]
+    def chanceversion(self,machine,version):
         #最新上传的版本号
         v_sn = version.edition_sn
+        mac_vsn = machine.version_sn
         if int(mac_vsn.split('.')[1]) < int(v_sn.split('.')[1]):
-            print('---->强制升级')
-            #强制升级
+            # 强制升级
+            # 更改状态表
+            machine_status = MachineChangeStatus()
+            machine_status.machine = machine
+            machine_status.version_sn = v_sn
+            machine_status.is_update = True
+            machine_status.save()
+
             file_path = version.file
             filname = version.name
             MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-            source_path = os.path.join(MEDIA_ROOT,str(file_path))
+            source_path = os.path.join(MEDIA_ROOT, str(file_path))
             file = open(source_path, 'rb')
             response = FileResponse(file)
             response['Content-Type'] = 'application/octet-stream'
@@ -31,90 +33,129 @@ class ResourceView(View):
             return response
 
         elif int(mac_vsn.split('.')[2]) < int(v_sn.split('.')[2]):
-            #选择升级
-            print('---->选择升级')
+            # 选择升级
             return HttpResponse("{\"status\":\"chance\"}", content_type='application/json')
         else:
-            #不用升级
-            return HttpResponse("{\"status\":\"no_change\"}", content_type='application/json')
-
-        #如果版本号2.0.2 选择更新
-        #2.1.2 必须更新
-
-#获取版本下的更新文件
-class ResourceView1(View):
-    def get(self,request,machine_sn):
-        #脚本默认机器号为1
-        # 通过机器号    版本号
-        machine = Machine.objects.get(machine_sn=machine_sn)
-        version_sn = machine.version_sn
-        version  = Version.objects.get(edition_sn=version_sn)
-        version_files = VesionFile.objects.filter(version=version)
-
-        #有可能没
-        if version_files.count() == 0:
             # 不用升级
             return HttpResponse("{\"status\":\"no_change\"}", content_type='application/json')
-        new_files = []
-        file_dict = {}
-        for vs_file in version_files:
-            uploadfiles = UploadFile.objects.all()
-            uploadfiles = uploadfiles.filter(versionfile=vs_file)
-            #获取最新的文件
-            uploadfile = uploadfiles.order_by('-add_time')[0]
-            file_dict['name'] = vs_file.name
-            file_dict['file'] = uploadfile
-            new_files.append(file_dict)
-        #把那几个修改的文件打包``
-        MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-        newname = os.path.join(MEDIA_ROOT, 'Change_file')
-        # if os.path.exists()
-        for file in new_files:
-            file_path = file['file'].file
-            source_path = os.path.join(MEDIA_ROOT,str(file_path))
-            capy_file = os.path.join(newname,file['name'])
-            shutil.copyfile(source_path, capy_file)
-        zipfolder = Zipfolder()
-        # 先判断有没有压缩文件,有删除
-        zipfolder.rm_zip(newname + '.zip')
-        #压缩打包文件
-        zipfolder.zip_ya(newname)
-        #清空chang_file
-        zipfolder.rm_file(newname)
-        file = open(newname + '.zip', 'rb')
-        response = FileResponse(file)
-        response['Content-Type'] = 'application/octet-stream'
-        response['Content-Disposition'] = 'attachment;filename="{0}"'.format('change_file.zip')
-        return response
+    def get(self,request,machine_sn):
+        version = Version.objects.order_by('-add_time')[0]
+        #最新上传的版本号
+        v_sn = version.edition_sn
+        #机器号  取出版本号2.0.1
+        machine = Machine.objects.get(machine_sn = machine_sn)
+        #  最新的版本  遇到表里面的有 跳过更新
+        try:
+            #第一取 状态表中机器没有对应的状态
+            machine_status = MachineChangeStatus.objects.filter(machine=machine)
+            machine_Newstatus = machine_status.order_by('-add_time')[0]#取最新的状态
+        except:
+            self.chanceversion(machine,version)
+        if not machine_Newstatus.is_update:
+            if machine_Newstatus.version_sn == v_sn:
+                #证明 最新的版本它选择没更新
+                return HttpResponse("{\"status\":\"chance_noupdate\"}", content_type='application/json')
+            else:
+                self.chanceversion(machine,version)
 
-        # tmp_dl_path = os.path.join(source_path, filename)
-        #写到一个文件夹中再返回 压缩文件给我
-        # utilities.toZip(source_path, filename)
+                #如果版本号2.0.2 选择更新
+                #2.1.2 必须更新
 
 class ReturnIsUpdateView(View):
-    def get(self,request,machine_sn):
-        #更新
-        version = Version.objects.order_by('-add_time')[0]
+    def machinestatus(self,version,machine_sn,isupdate):
         # 将机器号  和版本hao相关联
         machine = Machine.objects.filter(machine_sn=machine_sn)[0]
         machine.version_sn = version.edition_sn
         machine.save()
+        # 更改状态表 只记录没更新的状态
+        if not isupdate:
+            machine_status = MachineChangeStatus()
+            machine_status.machine = machine
+            machine_status.version_sn = version.edition_sn
+            machine_status.is_update = isupdate
+            machine_status.save()
 
-        file_path = version.file
-        filname = version.name
-        MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-        source_path = os.path.join(MEDIA_ROOT, str(file_path))
-        file = open(source_path, 'rb')
-        response = FileResponse(file)
-        response['Content-Type'] = 'application/octet-stream'
-        response['Content-Disposition'] = 'attachment;filename="{0}"'.format(filname)
+    def get(self,request,machine_sn):
+        isupdate = request.GET.get('isupdate','')
+        version = Version.objects.order_by('-add_time')[0]
+        if isupdate:
+            if isupdate == 'yes':
+                #更新
+                self.machinestatus(version,machine_sn,True)
+                file_path = version.file
+                filname = version.name
+                MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+                source_path = os.path.join(MEDIA_ROOT, str(file_path))
+                file = open(source_path, 'rb')
+                response = FileResponse(file)
+                response['Content-Type'] = 'application/octet-stream'
+                response['Content-Disposition'] = 'attachment;filename="{0}"'.format(filname)
+                return response
+            elif isupdate == 'no':
+                self.machinestatus(version, machine_sn, False)
+                return HttpResponse("{\"status\":\"no_update\"}", content_type='application/json')
+            else:
+                print('[+]:状态参数为空')
 
-        return response
+from Lyonline.settings import MEDIA_ROOT
+from utils.util import compareManager
+import shutil,hashlib
+# from .models
 
+#比较版本文件变化接口
+class DisplayChangefileView(View):
+    def get(self,request):
+        try:
+            version = Version.objects.order_by('-add_time')[0]
+        except:
+            print('当前文件库中没有版本')
+            return HttpResponse("{\"status\":\"no_version\"}", content_type='application/json')
 
+        if not version.is_changefile:
+            #没有检测修改的文件
+            #查看是否有 previous(上个版本的文件)
+            previous_path = os.path.join(MEDIA_ROOT,'previous')
+            #文件所在后台位置
+            tbbzipPath = os.path.join(MEDIA_ROOT,str(version.file))
+            #文件比较类
+            comparemanager = compareManager()
+            if not os.path.exists(previous_path):
+                comparemanager.make_file(tbbzipPath,'previous')
+            else:
+                #解压索 为当前的
+                comparemanager.make_file(tbbzipPath,'current')
+                current_path = os.path.join(MEDIA_ROOT, 'current')
+                #比较两个版本中的文件变化  返回文件名列表
+                deferent_list = comparemanager.compare(previous_path,current_path)
+                for filename in deferent_list:
+                    deferenFile = DeferentFileNameVesion()
+                    deferenFile.filename = filename
+                    deferenFile.version = version
+                    deferenFile.save()
+                    version.is_changefile = True
+                    version.save()
+            return HttpResponse("{\"status\":\"already_check\"}", content_type='application/json')
+        else:
+            print('[+]:已经检测完修改文件')
+            return HttpResponse("{\"status\":\"already_check\"}", content_type='application/json')
 
-
-
+#修改机器到指定的版本
+class ChangeMachineToViesionView(View):
+    def get(self,request,machine_sn):
+        edition_sn = request.GET.get('edition_sn','')
+        if edition_sn:
+            version = Version.objects.get(edition_sn=edition_sn)
+            file_path = version.file
+            filname = version.name
+            MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+            source_path = os.path.join(MEDIA_ROOT, str(file_path))
+            file = open(source_path, 'rb')
+            response = FileResponse(file)
+            response['Content-Type'] = 'application/octet-stream'
+            response['Content-Disposition'] = 'attachment;filename="{0}"'.format(filname)
+            return response
+        else:
+            return HttpResponse("{\"status\":\"edition_none\"}", content_type='application/json')
 
 
 

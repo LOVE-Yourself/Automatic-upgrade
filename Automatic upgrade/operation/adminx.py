@@ -1,5 +1,5 @@
 import xadmin
-from .models import Version,UploadFile,VesionFile,Machine
+from .models import Version,Machine,MachineChangeStatus,DeferentFileNameVesion
 
 class MachineAdmin(object):
     list_display = ['machine_sn', 'version_sn','add_time']
@@ -11,19 +11,22 @@ class VersionAdmin(object):
     search_fields = ['name','file','number','edition_sn']
     list_filter = ['name', 'file','number','edition_sn','add_time']
 
-class VesionFileAdmin(object):
-    list_display = ['version','name','add_time']
-    search_fields = ['version','name']
-    list_filter = ['version','name','add_time']
 
-class UploadFileAdmin(object):
-    list_display = ['versionfile','number', 'file', 'detail','add_time']
-    search_fields = ['versionfile','number', 'file', 'detail']
-    list_filter = ['versionfile','number', 'file', 'detail','add_time']
+class MachineChangeStatusAdmin(object):
+    list_display = ['machine', 'version_sn','is_update','add_time']
+    search_fields = ['machine', 'version_sn','is_update']
+    list_filter = ['machine', 'version_sn','is_update','add_time']
+
+class DeferentFileNameVesionAdmin(object):
+    list_display = ['version', 'filename','add_time']
+    search_fields = ['version', 'filename']
+    list_filter = ['version', 'filename','add_time']
+
 
 
 xadmin.site.register(Machine,MachineAdmin)
 xadmin.site.register(Version, VersionAdmin)
-xadmin.site.register(VesionFile,VesionFileAdmin)
-xadmin.site.register(UploadFile,UploadFileAdmin)
+xadmin.site.register(MachineChangeStatus, MachineChangeStatusAdmin)
+xadmin.site.register(DeferentFileNameVesion, DeferentFileNameVesionAdmin)
+
 

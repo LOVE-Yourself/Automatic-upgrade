@@ -24,8 +24,8 @@ import xadmin
 urlpatterns = [
     url(r'^xadmin/', xadmin.site.urls),
     url(r'^operation/',include('operation.urls')),
-    url(r'^users/',include('users.urls',namespace='user')),
-    url(r'^captcha/', include('captcha.urls')),
+    url(r'^changefile/',include('changefile.urls')),
+    # url(r'^users/',include('users.urls',namespace='user')),
     url(r'^media/(?P<path>.*)$',serve,{'document_root':MEDIA_ROOT}),
     # url(r'^static/(?P<path>.*)$',serve,{'document_root':STATIC_ROOT}),
 
