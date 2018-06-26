@@ -98,7 +98,7 @@ WSGI_APPLICATION = 'Lyonline.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME':'upgrate',
+        'NAME':'tbb_upgrate',
         'USER':'root',
         'PASSWORD':'tbb123456',
         'HOST':'39.107.243.161',

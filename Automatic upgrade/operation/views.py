@@ -142,6 +142,7 @@ class DisplayChangefileView(View):
 #修改机器到指定的版本
 class ChangeMachineToViesionView(View):
     def get(self,request,machine_sn):
+
         edition_sn = request.GET.get('edition_sn','')
         if edition_sn:
             version = Version.objects.get(edition_sn=edition_sn)

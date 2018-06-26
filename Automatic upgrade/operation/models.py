@@ -7,7 +7,7 @@ from  users.models import UserProfile
 # from Lyonline.users import UserProfile
 
 class Machine(models.Model):
-    machine_sn = models.CharField(default='1',max_length=20,verbose_name=u'机器号')
+    machine_sn = models.CharField(max_length=20,unique=True,null=True,blank=True,verbose_name=u'机器号')
     version_sn = models.CharField(default='2.0.1',max_length=20,verbose_name=u'版本号')
     add_time = models.DateTimeField(default=datetime.now, verbose_name=u'添加时间')
     class Meta:
