@@ -78,16 +78,21 @@ class compareManager:
         shutil.rmtree(basepath1)
 
     def create_checksum(self,path):
-        fp = open(path,'rb')
-        checksum = hashlib.md5()
-        while True:
-            buffer = fp.read(8192)
-            if not buffer: break
-            print('---->更改文件gitstash隐藏')
-            checksum.update(buffer)
-        fp.close()
-        checksum = checksum.digest()
-        return checksum
+        try:
+            fp = open(path,'rb')
+            checksum = hashlib.md5()
+            while True:
+                buffer = fp.read(8192)
+                if not buffer: break
+                print('---->更改文件gitstash隐藏')
+                checksum.update(buffer)
+            fp.close()
+            checksum = checksum.digest()
+            return checksum
+        except:
+            #遍历到文件返回True(没有更改.git)
+            file = 'wenjianjia'
+            return file
 
     def md5_deferent(self,previous_pathName,current_pathName):
         md5_pre = self.create_checksum(previous_pathName)
