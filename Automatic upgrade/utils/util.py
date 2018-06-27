@@ -83,7 +83,7 @@ class compareManager:
         while True:
             buffer = fp.read(8192)
             if not buffer: break
-            checksum.update(buffer.encode('utf8'))
+            checksum.update(buffer.encode('gbk'))
         fp.close()
         checksum = checksum.digest()
         return checksum

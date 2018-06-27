@@ -121,8 +121,12 @@ class DisplayChangefileView(View):
                 comparemanager.make_file(tbbzipPath,'previous')
             else:
                 #解压索 为当前的
-                comparemanager.make_file(tbbzipPath,'current')
                 current_path = os.path.join(MEDIA_ROOT, 'current')
+                if os.path.exists(current_path):
+                    #current 如果存在则删除
+                    shutil.rmtree(current_path)
+                comparemanager.make_file(tbbzipPath,'current')
+
                 #比较两个版本中的文件变化  返回文件名列表
                 deferent_list = comparemanager.compare(previous_path,current_path)
                 for filename in deferent_list:
