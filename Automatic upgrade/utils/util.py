@@ -78,12 +78,12 @@ class compareManager:
         shutil.rmtree(basepath1)
 
     def create_checksum(self,path):
-        fp = open(path)
+        fp = open(path,'rb')
         checksum = hashlib.md5()
         while True:
             buffer = fp.read(8192)
             if not buffer: break
-            checksum.update(buffer.encode('gbk'))
+            checksum.update(buffer.encode('utf8'))
         fp.close()
         checksum = checksum.digest()
         return checksum
