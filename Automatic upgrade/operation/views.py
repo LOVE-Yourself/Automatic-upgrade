@@ -37,13 +37,17 @@ class ResourceView(View):
             return HttpResponse("{\"status\":\"chance\"}", content_type='application/json')
         else:
             # 不用升级
-            return HttpResponse("{\"status\":\"no_change\"}", content_type='application/json')
+            #current_version_sn   new_version_sn
+            current_version_sn = mac_vsn
+            new_version_sn = v_sn
+            return HttpResponse("{\"status\":\"no_change\",\"current_version_sn\":\"{0}\",\"new_version_sn\":\"{1}\"}".format(current_version_sn,new_version_sn), content_type='application/json')
     def get(self,request,machine_sn):
         version = Version.objects.order_by('-add_time')[0]
         #最新上传的版本号
         v_sn = version.edition_sn
         #机器号  取出版本号2.0.1
         machine = Machine.objects.get(machine_sn = machine_sn)
+        mac_vsn = machine.version_sn
         #  最新的版本  遇到表里面的有 跳过更新
         try:
             #第一取 状态表中机器没有对应的状态
@@ -54,7 +58,9 @@ class ResourceView(View):
         if not machine_Newstatus.is_update:
             if machine_Newstatus.version_sn == v_sn:
                 #证明 最新的版本它选择没更新
-                return HttpResponse("{\"status\":\"chance_noupdate\"}", content_type='application/json')
+                current_version_sn = mac_vsn
+                new_version_sn = v_sn
+                return HttpResponse("{\"status\":\"no_change\",\"current_version_sn\":\"{0}\",\"new_version_sn\":\"{1}\"}".format(current_version_sn, new_version_sn), content_type='application/json')
             else:
                 return self.chanceversion(machine,version)
 
@@ -91,6 +97,7 @@ class ReturnIsUpdateView(View):
                 return response
             elif isupdate == 'no':
                 self.machinestatus(version, machine_sn, False)
+
                 return HttpResponse("{\"status\":\"no_update\"}", content_type='application/json')
             else:
                 print('[+]:状态参数为空')
