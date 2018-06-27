@@ -84,7 +84,7 @@ class compareManager:
             buffer = fp.read(8192)
             if not buffer: break
             print('---->更改文件gitstash隐藏')
-            checksum.update(buffer.encode('utf8'))
+            checksum.update(buffer)
         fp.close()
         checksum = checksum.digest()
         return checksum
